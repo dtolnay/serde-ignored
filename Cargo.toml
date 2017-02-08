@@ -1,0 +1,11 @@
+[package]
+name = "serde_ignored"
+version = "0.0.1"
+authors = ["David Tolnay <dtolnay@gmail.com>"]
+
+[dependencies]
+serde = "0.9"
+
+[dev-dependencies]
+serde_derive = "0.9"
+serde_json = "0.9"
