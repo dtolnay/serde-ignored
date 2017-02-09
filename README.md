@@ -1,5 +1,9 @@
 # Serde ignored
 
+[![Build Status](https://api.travis-ci.org/dtolnay/serde-ignored.svg?branch=master)](https://travis-ci.org/dtolnay/serde-ignored)
+[![Latest Version](https://img.shields.io/crates/v/serde-ignored.svg)](https://crates.io/crates/serde-ignored)
+[![Rust Documentation](https://img.shields.io/badge/api-rustdoc-blue.svg)](https://docs.rs/serde_ignored)
+
 Find out about keys that are ignored when deserializing data. This crate
 provides a wrapper that works with any existing Serde `Deserializer` and invokes
 a callback on every ignored field.
