@@ -1,6 +1,6 @@
 [package]
 name = "serde_ignored"
-version = "0.0.1"
+version = "0.0.1" # update version in readme for breaking changes
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 
 [dependencies]

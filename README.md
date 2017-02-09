@@ -12,6 +12,12 @@ Note that if you want unrecognized fields to be an error, consider using the
 
 [attribute]: https://serde.rs/attributes.html
 
+```toml
+[dependencies]
+serde = "0.9"
+serde_ignored = "0.0.1"
+```
+
 ```rust
 #[macro_use]
 extern crate serde_derive;
