@@ -73,26 +73,26 @@ use std::fmt::{self, Display};
 use serde::de::{self, Deserialize, DeserializeSeed, Visitor};
 
 /// Entry point. See crate documentation for an example.
-pub fn deserialize<D, F, T>(deserializer: D, callback: F) -> Result<T, D::Error>
+pub fn deserialize<D, F, T>(deserializer: D, mut callback: F) -> Result<T, D::Error>
     where D: de::Deserializer,
           F: FnMut(Path),
           T: Deserialize
 {
-    T::deserialize(Deserializer::new(deserializer, callback))
+    T::deserialize(Deserializer::new(deserializer, &mut callback))
 }
 
 /// Deserializer adapter that invokes a callback with the path to every unused
 /// field of the input.
-pub struct Deserializer<'a, D, F> {
+pub struct Deserializer<'a, 'b, D, F: 'b> {
     de: D,
-    callback: F,
+    callback: &'b mut F,
     path: Path<'a>,
 }
 
-impl<'a, D, F> Deserializer<'a, D, F>
+impl<'a, 'b, D, F> Deserializer<'a, 'b, D, F>
     where F: FnMut(Path)
 {
-    pub fn new(de: D, callback: F) -> Self {
+    pub fn new(de: D, callback: &'b mut F) -> Self {
         Deserializer {
             de: de,
             callback: callback,
@@ -137,7 +137,7 @@ impl<'a> Display for Path<'a> {
 
 /// Plain old forwarding impl except for `deserialize_ignored_any` which invokes
 /// the callback.
-impl<'a, D, F> de::Deserializer for Deserializer<'a, D, F>
+impl<'a, 'b, D, F> de::Deserializer for Deserializer<'a, 'b, D, F>
     where D: de::Deserializer,
           F: FnMut(Path)
 {
@@ -337,7 +337,7 @@ impl<'a, D, F> de::Deserializer for Deserializer<'a, D, F>
                                  Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_ignored_any<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_ignored_any<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor
     {
         (self.callback)(self.path);
@@ -347,14 +347,14 @@ impl<'a, D, F> de::Deserializer for Deserializer<'a, D, F>
 
 /// Wrapper that attaches context to a `Visitor`, `SeqVisitor`, `EnumVisitor` or
 /// `VariantVisitor`.
-struct Wrap<'a, X, F> {
+struct Wrap<'a, 'b, X, F: 'b> {
     delegate: X,
-    callback: F,
+    callback: &'b mut F,
     path: &'a Path<'a>,
 }
 
-impl<'a, X, F> Wrap<'a, X, F> {
-    fn new(delegate: X, callback: F, path: &'a Path<'a>) -> Self {
+impl<'a, 'b, X, F> Wrap<'a, 'b, X, F> {
+    fn new(delegate: X, callback: &'b mut F, path: &'a Path<'a>) -> Self {
         Wrap {
             delegate: delegate,
             callback: callback,
@@ -364,7 +364,7 @@ impl<'a, X, F> Wrap<'a, X, F> {
 }
 
 /// Forwarding impl to preserve context.
-impl<'a, X, F> Visitor for Wrap<'a, X, F>
+impl<'a, 'b, X, F> Visitor for Wrap<'a, 'b, X, F>
     where X: Visitor,
           F: FnMut(Path)
 {
@@ -522,12 +522,12 @@ impl<'a, X, F> Visitor for Wrap<'a, X, F>
 }
 
 /// Forwarding impl to preserve context.
-impl<'a, X: 'a, F> de::EnumVisitor for Wrap<'a, X, F>
+impl<'a, 'b, X: 'a, F: 'b> de::EnumVisitor for Wrap<'a, 'b, X, F>
     where X: de::EnumVisitor,
           F: FnMut(Path)
 {
     type Error = X::Error;
-    type Variant = Wrap<'a, X::Variant, F>;
+    type Variant = Wrap<'a, 'b, X::Variant, F>;
 
     fn visit_variant_seed<V>(self, seed: V) -> Result<(V::Value, Self::Variant), X::Error>
         where V: DeserializeSeed
@@ -541,7 +541,7 @@ impl<'a, X: 'a, F> de::EnumVisitor for Wrap<'a, X, F>
 }
 
 /// Forwarding impl to preserve context.
-impl<'a, X, F> de::VariantVisitor for Wrap<'a, X, F>
+impl<'a, 'b, X, F> de::VariantVisitor for Wrap<'a, 'b, X, F>
     where X: de::VariantVisitor,
           F: FnMut(Path)
 {
@@ -551,12 +551,12 @@ impl<'a, X, F> de::VariantVisitor for Wrap<'a, X, F>
         self.delegate.visit_unit()
     }
 
-    fn visit_newtype_seed<T>(mut self, seed: T) -> Result<T::Value, X::Error>
+    fn visit_newtype_seed<T>(self, seed: T) -> Result<T::Value, X::Error>
         where T: DeserializeSeed
     {
         let path = Path::NewtypeVariant { parent: self.path };
         self.delegate
-            .visit_newtype_seed(TrackedSeed::new(seed, &mut self.callback, path))
+            .visit_newtype_seed(TrackedSeed::new(seed, self.callback, path))
     }
 
     fn visit_tuple<V>(self, len: usize, visitor: V) -> Result<V::Value, X::Error>
@@ -996,15 +996,15 @@ impl<'a, X, F> DeserializeSeed for TrackedSeed<'a, X, F>
 }
 
 /// Seq visitor that tracks the index of its elements.
-struct SeqVisitor<'a, X, F> {
+struct SeqVisitor<'a, 'b, X, F: 'b> {
     delegate: X,
-    callback: F,
+    callback: &'b mut F,
     path: &'a Path<'a>,
     index: usize,
 }
 
-impl<'a, X, F> SeqVisitor<'a, X, F> {
-    fn new(delegate: X, callback: F, path: &'a Path<'a>) -> Self {
+impl<'a, 'b, X, F> SeqVisitor<'a, 'b, X, F> {
+    fn new(delegate: X, callback: &'b mut F, path: &'a Path<'a>) -> Self {
         SeqVisitor {
             delegate: delegate,
             callback: callback,
@@ -1015,7 +1015,7 @@ impl<'a, X, F> SeqVisitor<'a, X, F> {
 }
 
 /// Forwarding impl to preserve context.
-impl<'a, X, F> de::SeqVisitor for SeqVisitor<'a, X, F>
+impl<'a, 'b, X, F> de::SeqVisitor for SeqVisitor<'a, 'b, X, F>
     where X: de::SeqVisitor,
           F: FnMut(Path)
 {
@@ -1029,7 +1029,7 @@ impl<'a, X, F> de::SeqVisitor for SeqVisitor<'a, X, F>
             index: self.index,
         };
         self.index += 1;
-        self.delegate.visit_seed(TrackedSeed::new(seed, &mut self.callback, path))
+        self.delegate.visit_seed(TrackedSeed::new(seed, &mut *self.callback, path))
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
@@ -1039,15 +1039,15 @@ impl<'a, X, F> de::SeqVisitor for SeqVisitor<'a, X, F>
 
 /// Map visitor that captures the string value of its keys and uses that to
 /// track the path to its values.
-struct MapVisitor<'a, X, F> {
+struct MapVisitor<'a, 'b, X, F: 'b> {
     delegate: X,
-    callback: F,
+    callback: &'b mut F,
     path: &'a Path<'a>,
     key: Option<String>,
 }
 
-impl<'a, X, F> MapVisitor<'a, X, F> {
-    fn new(delegate: X, callback: F, path: &'a Path<'a>) -> Self {
+impl<'a, 'b, X, F> MapVisitor<'a, 'b, X, F> {
+    fn new(delegate: X, callback: &'b mut F, path: &'a Path<'a>) -> Self {
         MapVisitor {
             delegate: delegate,
             callback: callback,
@@ -1063,7 +1063,7 @@ impl<'a, X, F> MapVisitor<'a, X, F> {
     }
 }
 
-impl<'a, X, F> de::MapVisitor for MapVisitor<'a, X, F>
+impl<'a, 'b, X, F> de::MapVisitor for MapVisitor<'a, 'b, X, F>
     where X: de::MapVisitor,
           F: FnMut(Path)
 {
@@ -1082,7 +1082,7 @@ impl<'a, X, F> de::MapVisitor for MapVisitor<'a, X, F>
             parent: self.path,
             key: self.key()?,
         };
-        self.delegate.visit_value_seed(TrackedSeed::new(seed, &mut self.callback, path))
+        self.delegate.visit_value_seed(TrackedSeed::new(seed, &mut *self.callback, path))
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
