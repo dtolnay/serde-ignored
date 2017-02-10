@@ -19,7 +19,7 @@ Note that if you want unrecognized fields to be an error, consider using the
 ```toml
 [dependencies]
 serde = "0.9"
-serde_ignored = "0.0.1"
+serde_ignored = "0.0.2"
 ```
 
 ```rust
