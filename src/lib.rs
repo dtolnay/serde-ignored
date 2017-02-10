@@ -1029,7 +1029,7 @@ impl<'a, 'b, X, F> de::SeqVisitor for SeqVisitor<'a, 'b, X, F>
             index: self.index,
         };
         self.index += 1;
-        self.delegate.visit_seed(TrackedSeed::new(seed, &mut *self.callback, path))
+        self.delegate.visit_seed(TrackedSeed::new(seed, self.callback, path))
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
@@ -1082,7 +1082,7 @@ impl<'a, 'b, X, F> de::MapVisitor for MapVisitor<'a, 'b, X, F>
             parent: self.path,
             key: self.key()?,
         };
-        self.delegate.visit_value_seed(TrackedSeed::new(seed, &mut *self.callback, path))
+        self.delegate.visit_value_seed(TrackedSeed::new(seed, self.callback, path))
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
