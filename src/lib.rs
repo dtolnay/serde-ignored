@@ -446,6 +446,12 @@ impl<'a, 'b, 'de, X, F> Visitor<'de> for Wrap<'a, 'b, X, F>
         self.delegate.visit_str(v)
     }
 
+    fn visit_borrowed_str<E>(self, v: &'de str) -> Result<Self::Value, E>
+        where E: de::Error
+    {
+        self.delegate.visit_borrowed_str(v)
+    }
+
     fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
         where E: de::Error
     {
@@ -506,6 +512,12 @@ impl<'a, 'b, 'de, X, F> Visitor<'de> for Wrap<'a, 'b, X, F>
         where E: de::Error
     {
         self.delegate.visit_bytes(v)
+    }
+
+    fn visit_borrowed_bytes<E>(self, v: &'de [u8]) -> Result<Self::Value, E>
+        where E: de::Error
+    {
+        self.delegate.visit_borrowed_bytes(v)
     }
 
     fn visit_byte_buf<E>(self, v: Vec<u8>) -> Result<Self::Value, E>
@@ -886,6 +898,13 @@ impl<'a, 'de, X> Visitor<'de> for CaptureKey<'a, X>
         self.delegate.visit_str(v)
     }
 
+    fn visit_borrowed_str<E>(self, v: &'de str) -> Result<Self::Value, E>
+        where E: de::Error
+    {
+        *self.key = Some(v.to_owned());
+        self.delegate.visit_borrowed_str(v)
+    }
+
     fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
         where E: de::Error
     {
@@ -939,6 +958,12 @@ impl<'a, 'de, X> Visitor<'de> for CaptureKey<'a, X>
         where E: de::Error
     {
         self.delegate.visit_bytes(v)
+    }
+
+    fn visit_borrowed_bytes<E>(self, v: &'de [u8]) -> Result<Self::Value, E>
+        where E: de::Error
+    {
+        self.delegate.visit_borrowed_bytes(v)
     }
 
     fn visit_byte_buf<E>(self, v: Vec<u8>) -> Result<Self::Value, E>
