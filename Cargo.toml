@@ -1,6 +1,6 @@
 [package]
 name = "serde_ignored"
-version = "0.0.2" # update version in readme for breaking changes
+version = "0.0.3" # update version in readme for breaking changes
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 license = "MIT/Apache-2.0"
 description = "Find out about keys that are ignored when deserializing data"
@@ -9,8 +9,8 @@ keywords = ["serde"]
 categories = ["encoding"]
 
 [dependencies]
-serde = "0.9"
+serde = "1.0"
 
 [dev-dependencies]
-serde_derive = "0.9"
-serde_json = "0.9"
+serde_derive = "1.0"
+serde_json = "1.0"
