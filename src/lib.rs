@@ -75,26 +75,26 @@ use std::fmt::{self, Display};
 use serde::de::{self, Deserialize, DeserializeSeed, Visitor};
 
 /// Entry point. See crate documentation for an example.
-pub fn deserialize<'de, D, F, T>(deserializer: D, callback: F) -> Result<T, D::Error>
+pub fn deserialize<'de, D, F, T>(deserializer: D, mut callback: F) -> Result<T, D::Error>
     where D: de::Deserializer<'de>,
           F: FnMut(Path),
           T: Deserialize<'de>
 {
-    T::deserialize(Deserializer::new(deserializer, callback))
+    T::deserialize(Deserializer::new(deserializer, &mut callback))
 }
 
 /// Deserializer adapter that invokes a callback with the path to every unused
 /// field of the input.
-pub struct Deserializer<'a, D, F> {
+pub struct Deserializer<'a, 'b, D, F: 'b> {
     de: D,
-    callback: F,
+    callback: &'b mut F,
     path: Path<'a>,
 }
 
-impl<'a, D, F> Deserializer<'a, D, F>
+impl<'a, 'b, D, F> Deserializer<'a, 'b, D, F>
     where F: FnMut(Path)
 {
-    pub fn new(de: D, callback: F) -> Self {
+    pub fn new(de: D, callback: &'b mut F) -> Self {
         Deserializer {
             de: de,
             callback: callback,
@@ -139,183 +139,183 @@ impl<'a> Display for Path<'a> {
 
 /// Plain old forwarding impl except for `deserialize_ignored_any` which invokes
 /// the callback.
-impl<'a, 'de, D, F> de::Deserializer<'de> for Deserializer<'a, D, F>
+impl<'a, 'b, 'de, D, F> de::Deserializer<'de> for Deserializer<'a, 'b, D, F>
     where D: de::Deserializer<'de>,
           F: FnMut(Path)
 {
     type Error = D::Error;
 
-    fn deserialize_any<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_any(Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_any(Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_bool<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_bool(Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_bool(Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_u8<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_u8<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_u8(Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_u8(Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_u16<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_u16<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_u16(Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_u16(Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_u32<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_u32<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_u32(Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_u32(Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_u64<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_u64<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_u64(Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_u64(Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_i8<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_i8<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_i8(Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_i8(Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_i16<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_i16<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_i16(Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_i16(Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_i32<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_i32<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_i32(Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_i32(Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_i64<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_i64<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_i64(Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_i64(Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_f32<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_f32<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_f32(Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_f32(Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_f64<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_f64<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_f64(Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_f64(Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_char<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_char<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_char(Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_char(Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_str<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_str<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_str(Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_str(Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_string<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_string<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_string(Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_string(Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_bytes<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_bytes(Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_bytes(Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_byte_buf<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_byte_buf(Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_byte_buf(Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_option<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_option(Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_option(Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_unit<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_unit<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_unit(Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_unit(Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_unit_struct<V>(mut self,
+    fn deserialize_unit_struct<V>(self,
                                   name: &'static str,
                                   visitor: V)
                                   -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_unit_struct(name, Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_unit_struct(name, Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_newtype_struct<V>(mut self,
+    fn deserialize_newtype_struct<V>(self,
                                      name: &'static str,
                                      visitor: V)
                                      -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_newtype_struct(name, Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_newtype_struct(name, Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_seq<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_seq<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_seq(Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_seq(Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_tuple<V>(mut self, len: usize, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_tuple<V>(self, len: usize, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_tuple(len, Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_tuple(len, Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_tuple_struct<V>(mut self,
+    fn deserialize_tuple_struct<V>(self,
                                    name: &'static str,
                                    len: usize,
                                    visitor: V)
                                    -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_tuple_struct(name, len, Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_tuple_struct(name, len, Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_map<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_map<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_map(Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_map(Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_struct<V>(mut self,
+    fn deserialize_struct<V>(self,
                              name: &'static str,
                              fields: &'static [&'static str],
                              visitor: V)
                              -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_struct(name, fields, Wrap::new(visitor, &mut self.callback, &self.path))
+        self.de.deserialize_struct(name, fields, Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_enum<V>(mut self,
+    fn deserialize_enum<V>(self,
                            name: &'static str,
                            variants: &'static [&'static str],
                            visitor: V)
@@ -324,10 +324,10 @@ impl<'a, 'de, D, F> de::Deserializer<'de> for Deserializer<'a, D, F>
     {
         self.de.deserialize_enum(name,
                                  variants,
-                                 Wrap::new(visitor, &mut self.callback, &self.path))
+                                 Wrap::new(visitor, self.callback, &self.path))
     }
 
-    fn deserialize_ignored_any<V>(mut self, visitor: V) -> Result<V::Value, D::Error>
+    fn deserialize_ignored_any<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
         (self.callback)(self.path);
