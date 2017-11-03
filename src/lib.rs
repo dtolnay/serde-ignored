@@ -490,16 +490,16 @@ impl<'a, 'de, X, F> Visitor<'de> for Wrap<'a, X, F>
         })
     }
 
-    fn visit_seq<V>(mut self, visitor: V) -> Result<Self::Value, V::Error>
+    fn visit_seq<V>(self, visitor: V) -> Result<Self::Value, V::Error>
         where V: de::SeqAccess<'de>
     {
-        self.delegate.visit_seq(SeqAccess::new(visitor, &mut self.callback, self.path))
+        self.delegate.visit_seq(SeqAccess::new(visitor, self.callback, self.path))
     }
 
-    fn visit_map<V>(mut self, visitor: V) -> Result<Self::Value, V::Error>
+    fn visit_map<V>(self, visitor: V) -> Result<Self::Value, V::Error>
         where V: de::MapAccess<'de>
     {
-        self.delegate.visit_map(MapAccess::new(visitor, &mut self.callback, self.path))
+        self.delegate.visit_map(MapAccess::new(visitor, self.callback, self.path))
     }
 
     fn visit_enum<V>(self, visitor: V) -> Result<Self::Value, V::Error>
@@ -1009,15 +1009,15 @@ impl<'a, 'de, X, F> DeserializeSeed<'de> for TrackedSeed<'a, X, F>
 }
 
 /// Seq visitor that tracks the index of its elements.
-struct SeqAccess<'a, 'b, X, F: 'b> {
+struct SeqAccess<'a, X, F> {
     delegate: X,
-    callback: &'b mut F,
+    callback: F,
     path: &'a Path<'a>,
     index: usize,
 }
 
-impl<'a, 'b, X, F> SeqAccess<'a, 'b, X, F> {
-    fn new(delegate: X, callback: &'b mut F, path: &'a Path<'a>) -> Self {
+impl<'a, X, F> SeqAccess<'a, X, F> {
+    fn new(delegate: X, callback: F, path: &'a Path<'a>) -> Self {
         SeqAccess {
             delegate: delegate,
             callback: callback,
@@ -1028,7 +1028,7 @@ impl<'a, 'b, X, F> SeqAccess<'a, 'b, X, F> {
 }
 
 /// Forwarding impl to preserve context.
-impl<'a, 'b, 'de, X, F> de::SeqAccess<'de> for SeqAccess<'a, 'b, X, F>
+impl<'a, 'de, X, F> de::SeqAccess<'de> for SeqAccess<'a, X, F>
     where X: de::SeqAccess<'de>,
           F: FnMut(Path)
 {
@@ -1042,7 +1042,7 @@ impl<'a, 'b, 'de, X, F> de::SeqAccess<'de> for SeqAccess<'a, 'b, X, F>
             index: self.index,
         };
         self.index += 1;
-        self.delegate.next_element_seed(TrackedSeed::new(seed, self.callback, path))
+        self.delegate.next_element_seed(TrackedSeed::new(seed, &mut self.callback, path))
     }
 
     fn size_hint(&self) -> Option<usize> {
@@ -1052,15 +1052,15 @@ impl<'a, 'b, 'de, X, F> de::SeqAccess<'de> for SeqAccess<'a, 'b, X, F>
 
 /// Map visitor that captures the string value of its keys and uses that to
 /// track the path to its values.
-struct MapAccess<'a, 'b, X, F: 'b> {
+struct MapAccess<'a, X, F> {
     delegate: X,
-    callback: &'b mut F,
+    callback: F,
     path: &'a Path<'a>,
     key: Option<String>,
 }
 
-impl<'a, 'b, X, F> MapAccess<'a, 'b, X, F> {
-    fn new(delegate: X, callback: &'b mut F, path: &'a Path<'a>) -> Self {
+impl<'a, X, F> MapAccess<'a, X, F> {
+    fn new(delegate: X, callback: F, path: &'a Path<'a>) -> Self {
         MapAccess {
             delegate: delegate,
             callback: callback,
@@ -1076,7 +1076,7 @@ impl<'a, 'b, X, F> MapAccess<'a, 'b, X, F> {
     }
 }
 
-impl<'a, 'b, 'de, X, F> de::MapAccess<'de> for MapAccess<'a, 'b, X, F>
+impl<'a, 'de, X, F> de::MapAccess<'de> for MapAccess<'a, X, F>
     where X: de::MapAccess<'de>,
           F: FnMut(Path)
 {
@@ -1095,7 +1095,7 @@ impl<'a, 'b, 'de, X, F> de::MapAccess<'de> for MapAccess<'a, 'b, X, F>
             parent: self.path,
             key: self.key()?,
         };
-        self.delegate.next_value_seed(TrackedSeed::new(seed, self.callback, path))
+        self.delegate.next_value_seed(TrackedSeed::new(seed, &mut self.callback, path))
     }
 
     fn size_hint(&self) -> Option<usize> {
