@@ -94,6 +94,15 @@ pub struct Deserializer<'a, 'b, D, F: 'b> {
 impl<'a, 'b, D, F> Deserializer<'a, 'b, D, F>
     where F: FnMut(Path)
 {
+    // The structs in this crate all hold their closure by &mut F. If they were
+    // to contain F by value, any method taking &mut self (for example
+    // SeqAccess::next_element_seed) would be forced to recurse with &mut
+    // self.callback, even if F is instantiated with a &mut already. This way
+    // they contain &mut F and the &mut self methods can recurse with
+    // self.callback unchanged. This avoids blowing the recursion limit in
+    // Cargo's use of this crate.
+    //
+    // https://github.com/dtolnay/serde-ignored/pull/1
     pub fn new(de: D, callback: &'b mut F) -> Self {
         Deserializer {
             de: de,
