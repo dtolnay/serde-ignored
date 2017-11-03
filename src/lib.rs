@@ -67,6 +67,8 @@
 //! # fn main() { try_main().unwrap() }
 //! ```
 
+#![doc(html_root_url = "https://docs.rs/serde_ignored/0.0.4")]
+
 extern crate serde;
 
 use std::fmt::{self, Display};
