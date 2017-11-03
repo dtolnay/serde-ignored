@@ -977,14 +977,14 @@ impl<'a, 'de, X> Visitor<'de> for CaptureKey<'a, X>
 
 /// Seed used for map values, sequence elements and newtype variants to track
 /// their path.
-struct TrackedSeed<'a, X, F> {
+struct TrackedSeed<'a, X, F: 'a> {
     seed: X,
-    callback: F,
+    callback: &'a mut F,
     path: Path<'a>,
 }
 
 impl<'a, X, F> TrackedSeed<'a, X, F> {
-    fn new(seed: X, callback: F, path: Path<'a>) -> Self {
+    fn new(seed: X, callback: &'a mut F, path: Path<'a>) -> Self {
         TrackedSeed {
             seed: seed,
             callback: callback,
