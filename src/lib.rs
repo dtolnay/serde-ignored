@@ -335,7 +335,7 @@ impl<'a, 'de, D, F> de::Deserializer<'de> for Deserializer<'a, D, F>
     fn deserialize_identifier<V>(self, visitor: V) -> Result<V::Value, D::Error>
         where V: Visitor<'de>
     {
-        self.de.deserialize_identifier(visitor)
+        self.de.deserialize_identifier(Wrap::new(visitor, self.callback, &self.path))
     }
 }
 
