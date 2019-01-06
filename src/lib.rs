@@ -1,11 +1,7 @@
-//! ```rust
-//! #[macro_use]
-//! extern crate serde_derive;
-//!
-//! extern crate serde;
-//! extern crate serde_json;
-//! extern crate serde_ignored;
-//!
+//! ```edition2018
+//! # use serde_derive::Deserialize;
+//! #
+//! use serde::Deserialize;
 //! use std::collections::{BTreeSet as Set, BTreeMap as Map};
 //!
 //! #[derive(Debug, PartialEq, Deserialize)]

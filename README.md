@@ -23,13 +23,7 @@ serde_ignored = "0.0.4"
 ```
 
 ```rust
-#[macro_use]
-extern crate serde_derive;
-
-extern crate serde;
-extern crate serde_json;
-extern crate serde_ignored;
-
+use serde::Deserialize;
 use std::collections::{BTreeSet as Set, BTreeMap as Map};
 
 #[derive(Debug, PartialEq, Deserialize)]
