@@ -2,6 +2,7 @@
 name = "serde_ignored"
 version = "0.0.4" # update html_root_url and version in readme
 authors = ["David Tolnay <dtolnay@gmail.com>"]
+edition = "2018"
 license = "MIT/Apache-2.0"
 description = "Find out about keys that are ignored when deserializing data"
 repository = "https://github.com/dtolnay/serde-ignored"
