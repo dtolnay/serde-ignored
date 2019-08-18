@@ -67,3 +67,28 @@ fn test_readme() {
     };
     assert_eq!(p, expected);
 }
+
+#[test]
+fn test_int_key() {
+    #[derive(Debug, Deserialize)]
+    struct Test {
+        a: Map<usize, V>,
+    }
+
+    #[derive(Debug, Deserialize)]
+    struct V {
+        used: (),
+    }
+
+    let json = r#"{
+        "a": {
+            "2": {
+                "used": null,
+                "unused": null
+            }
+        }
+    }"#;
+
+    let ignored = &["a.2.unused"];
+    assert_ignored::<Test>(json, ignored);
+}
