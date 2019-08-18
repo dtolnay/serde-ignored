@@ -1,6 +1,6 @@
 [package]
 name = "serde_ignored"
-version = "0.0.4" # update html_root_url and version in readme
+version = "0.1.0" # update html_root_url and version in readme
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
