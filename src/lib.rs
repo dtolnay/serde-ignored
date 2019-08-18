@@ -996,7 +996,7 @@ where
     }
 }
 
-/// Forwarding impl except `visit_str` and `visit_string` which save the string.
+/// Forwarding impl that also saves the value of integers and strings.
 impl<'a, 'de, X> Visitor<'de> for CaptureKey<'a, X>
 where
     X: Visitor<'de>,
@@ -1011,6 +1011,7 @@ where
     where
         E: de::Error,
     {
+        *self.key = Some(v.to_string());
         self.delegate.visit_bool(v)
     }
 
@@ -1018,6 +1019,7 @@ where
     where
         E: de::Error,
     {
+        *self.key = Some(v.to_string());
         self.delegate.visit_i8(v)
     }
 
@@ -1025,6 +1027,7 @@ where
     where
         E: de::Error,
     {
+        *self.key = Some(v.to_string());
         self.delegate.visit_i16(v)
     }
 
@@ -1032,6 +1035,7 @@ where
     where
         E: de::Error,
     {
+        *self.key = Some(v.to_string());
         self.delegate.visit_i32(v)
     }
 
@@ -1039,6 +1043,7 @@ where
     where
         E: de::Error,
     {
+        *self.key = Some(v.to_string());
         self.delegate.visit_i64(v)
     }
 
@@ -1046,6 +1051,7 @@ where
     where
         E: de::Error,
     {
+        *self.key = Some(v.to_string());
         self.delegate.visit_u8(v)
     }
 
@@ -1053,6 +1059,7 @@ where
     where
         E: de::Error,
     {
+        *self.key = Some(v.to_string());
         self.delegate.visit_u16(v)
     }
 
@@ -1060,6 +1067,7 @@ where
     where
         E: de::Error,
     {
+        *self.key = Some(v.to_string());
         self.delegate.visit_u32(v)
     }
 
@@ -1067,6 +1075,7 @@ where
     where
         E: de::Error,
     {
+        *self.key = Some(v.to_string());
         self.delegate.visit_u64(v)
     }
 
@@ -1140,7 +1149,7 @@ where
     where
         D: de::Deserializer<'de>,
     {
-        self.delegate.visit_newtype_struct(deserializer)
+        self.delegate.visit_newtype_struct(CaptureKey::new(deserializer, self.key))
     }
 
     fn visit_seq<V>(self, visitor: V) -> Result<Self::Value, V::Error>
@@ -1161,7 +1170,7 @@ where
     where
         V: de::EnumAccess<'de>,
     {
-        self.delegate.visit_enum(visitor)
+        self.delegate.visit_enum(CaptureKey::new(visitor, self.key))
     }
 
     fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
@@ -1183,6 +1192,21 @@ where
         E: de::Error,
     {
         self.delegate.visit_byte_buf(v)
+    }
+}
+
+impl<'a, 'de, X> de::EnumAccess<'de> for CaptureKey<'a, X>
+where
+    X: de::EnumAccess<'de>,
+{
+    type Error = X::Error;
+    type Variant = X::Variant;
+
+    fn variant_seed<V>(self, seed: V) -> Result<(V::Value, Self::Variant), X::Error>
+    where
+        V: DeserializeSeed<'de>,
+    {
+        self.delegate.variant_seed(CaptureKey::new(seed, self.key))
     }
 }
 
