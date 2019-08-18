@@ -39,7 +39,7 @@ fn test_readme() {
         "name": "demo",
         "dependencies": {
             "serde": {
-                "version": "0.9",
+                "version": "1.0",
                 "typo1": ""
             }
         },
@@ -59,7 +59,7 @@ fn test_readme() {
             map.insert(
                 "serde".to_owned(),
                 Dependency {
-                    version: "0.9".to_owned(),
+                    version: "1.0".to_owned(),
                 },
             );
             map
