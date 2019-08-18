@@ -110,3 +110,24 @@ fn test_newtype_key() {
     let ignored = &["k.unused"];
     assert_ignored::<Test>(json, ignored);
 }
+
+#[test]
+fn test_unit_variant_key() {
+    type Test = Map<Key, V>;
+
+    #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Deserialize)]
+    enum Key {
+        First,
+        Second,
+    }
+
+    let json = r#"{
+        "First": {
+            "used": null,
+            "unused": null
+        }
+    }"#;
+
+    let ignored = &["First.unused"];
+    assert_ignored::<Test>(json, ignored);
+}
