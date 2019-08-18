@@ -22,6 +22,11 @@ where
     value
 }
 
+#[derive(Debug, Deserialize)]
+struct V {
+    used: (),
+}
+
 #[test]
 fn test_readme() {
     #[derive(Debug, PartialEq, Deserialize)]
@@ -75,11 +80,6 @@ fn test_int_key() {
         a: Map<usize, V>,
     }
 
-    #[derive(Debug, Deserialize)]
-    struct V {
-        used: (),
-    }
-
     let json = r#"{
         "a": {
             "2": {
@@ -90,5 +90,23 @@ fn test_int_key() {
     }"#;
 
     let ignored = &["a.2.unused"];
+    assert_ignored::<Test>(json, ignored);
+}
+
+#[test]
+fn test_newtype_key() {
+    type Test = Map<Key, V>;
+
+    #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Deserialize)]
+    struct Key(&'static str);
+
+    let json = r#"{
+        "k": {
+            "used": null,
+            "unused": null
+        }
+    }"#;
+
+    let ignored = &["k.unused"];
     assert_ignored::<Test>(json, ignored);
 }
