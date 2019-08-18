@@ -1,4 +1,18 @@
-//! ```edition2018
+//! Find out about keys that are ignored when deserializing data. This crate
+//! provides a wrapper that works with any existing Serde `Deserializer` and
+//! invokes a callback on every ignored field.
+//!
+//! You can use this to warn users about extraneous keys in a config file, for
+//! example.
+//!
+//! Note that if you want unrecognized fields to be an error, consider using the
+//! `#[serde(deny_unknown_fields)]` [attribute] instead.
+//!
+//! [attribute]: https://serde.rs/attributes.html
+//!
+//! # Example
+//!
+//! ```
 //! # use serde_derive::Deserialize;
 //! #
 //! use serde::Deserialize;
