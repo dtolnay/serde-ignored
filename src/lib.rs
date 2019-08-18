@@ -101,8 +101,8 @@ where
     // https://github.com/dtolnay/serde-ignored/pull/1
     pub fn new(de: D, callback: &'b mut F) -> Self {
         Deserializer {
-            de: de,
-            callback: callback,
+            de,
+            callback,
             path: Path::Root,
         }
     }
@@ -421,9 +421,9 @@ struct Wrap<'a, 'b, X, F: 'b> {
 impl<'a, 'b, X, F> Wrap<'a, 'b, X, F> {
     fn new(delegate: X, callback: &'b mut F, path: &'a Path<'a>) -> Self {
         Wrap {
-            delegate: delegate,
-            callback: callback,
-            path: path,
+            delegate,
+            callback,
+            path,
         }
     }
 }
@@ -699,10 +699,7 @@ struct CaptureKey<'a, X> {
 
 impl<'a, X> CaptureKey<'a, X> {
     fn new(delegate: X, key: &'a mut Option<String>) -> Self {
-        CaptureKey {
-            delegate: delegate,
-            key: key,
-        }
+        CaptureKey { delegate, key }
     }
 }
 
@@ -1186,9 +1183,9 @@ struct TrackedSeed<'a, X, F: 'a> {
 impl<'a, X, F> TrackedSeed<'a, X, F> {
     fn new(seed: X, callback: &'a mut F, path: Path<'a>) -> Self {
         TrackedSeed {
-            seed: seed,
-            callback: callback,
-            path: path,
+            seed,
+            callback,
+            path,
         }
     }
 }
@@ -1223,9 +1220,9 @@ struct SeqAccess<'a, 'b, X, F: 'b> {
 impl<'a, 'b, X, F> SeqAccess<'a, 'b, X, F> {
     fn new(delegate: X, callback: &'b mut F, path: &'a Path<'a>) -> Self {
         SeqAccess {
-            delegate: delegate,
-            callback: callback,
-            path: path,
+            delegate,
+            callback,
+            path,
             index: 0,
         }
     }
@@ -1269,9 +1266,9 @@ struct MapAccess<'a, 'b, X, F: 'b> {
 impl<'a, 'b, X, F> MapAccess<'a, 'b, X, F> {
     fn new(delegate: X, callback: &'b mut F, path: &'a Path<'a>) -> Self {
         MapAccess {
-            delegate: delegate,
-            callback: callback,
-            path: path,
+            delegate,
+            callback,
+            path,
             key: None,
         }
     }
