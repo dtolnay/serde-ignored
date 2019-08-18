@@ -22,6 +22,11 @@ where
     value
 }
 
+#[derive(Debug, Deserialize)]
+struct V {
+    used: (),
+}
+
 #[test]
 fn test_readme() {
     #[derive(Debug, PartialEq, Deserialize)]
@@ -66,4 +71,63 @@ fn test_readme() {
         },
     };
     assert_eq!(p, expected);
+}
+
+#[test]
+fn test_int_key() {
+    #[derive(Debug, Deserialize)]
+    struct Test {
+        a: Map<usize, V>,
+    }
+
+    let json = r#"{
+        "a": {
+            "2": {
+                "used": null,
+                "unused": null
+            }
+        }
+    }"#;
+
+    let ignored = &["a.2.unused"];
+    assert_ignored::<Test>(json, ignored);
+}
+
+#[test]
+fn test_newtype_key() {
+    type Test = Map<Key, V>;
+
+    #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Deserialize)]
+    struct Key(&'static str);
+
+    let json = r#"{
+        "k": {
+            "used": null,
+            "unused": null
+        }
+    }"#;
+
+    let ignored = &["k.unused"];
+    assert_ignored::<Test>(json, ignored);
+}
+
+#[test]
+fn test_unit_variant_key() {
+    type Test = Map<Key, V>;
+
+    #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Deserialize)]
+    enum Key {
+        First,
+        Second,
+    }
+
+    let json = r#"{
+        "First": {
+            "used": null,
+            "unused": null
+        }
+    }"#;
+
+    let ignored = &["First.unused"];
+    assert_ignored::<Test>(json, ignored);
 }
