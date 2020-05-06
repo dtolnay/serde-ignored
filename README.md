@@ -1,6 +1,6 @@
 # Serde ignored
 
-[![Build Status](https://api.travis-ci.org/dtolnay/serde-ignored.svg?branch=master)](https://travis-ci.org/dtolnay/serde-ignored)
+[![Build Status](https://img.shields.io/github/workflow/status/dtolnay/serde-ignored/CI/master)](https://github.com/dtolnay/serde-ignored/actions?query=branch%3Amaster)
 [![Latest Version](https://img.shields.io/crates/v/serde-ignored.svg)](https://crates.io/crates/serde-ignored)
 [![Rust Documentation](https://img.shields.io/badge/api-rustdoc-blue.svg)](https://docs.rs/serde_ignored)
 
