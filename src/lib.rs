@@ -86,6 +86,7 @@
 //! ```
 
 #![doc(html_root_url = "https://docs.rs/serde_ignored/0.1.2")]
+#![allow(clippy::missing_errors_doc)]
 
 use serde::de::{self, Deserialize, DeserializeSeed, Visitor};
 use std::fmt::{self, Display};
