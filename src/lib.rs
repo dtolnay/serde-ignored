@@ -89,29 +89,34 @@
 #![allow(clippy::missing_errors_doc)]
 
 use serde::de::{self, Deserialize, DeserializeSeed, Visitor};
-use std::fmt::{self, Display};
+use std::{
+    fmt::{self, Display},
+    marker::PhantomData,
+};
 
 /// Entry point. See crate documentation for an example.
-pub fn deserialize<'de, D, F, T>(deserializer: D, mut callback: F) -> Result<T, D::Error>
+pub fn deserialize<'de, D, F, T, S>(deserializer: D, mut callback: F) -> Result<T, D::Error>
 where
     D: de::Deserializer<'de>,
-    F: FnMut(Path),
+    F: FnMut(Path, S),
     T: Deserialize<'de>,
+    S: Deserialize<'de>,
 {
     T::deserialize(Deserializer::new(deserializer, &mut callback))
 }
 
 /// Deserializer adapter that invokes a callback with the path to every unused
 /// field of the input.
-pub struct Deserializer<'a, 'b, D, F: 'b> {
+pub struct Deserializer<'a, 'b, D, F: 'b, S> {
     de: D,
     callback: &'b mut F,
     path: Path<'a>,
+    phantom: PhantomData<fn() -> S>,
 }
 
-impl<'a, 'b, D, F> Deserializer<'a, 'b, D, F>
+impl<'a, 'b, D, F, S> Deserializer<'a, 'b, D, F, S>
 where
-    F: FnMut(Path),
+    F: FnMut(Path, S),
 {
     // The structs in this crate all hold their closure by &mut F. If they were
     // to contain F by value, any method taking &mut self (for example
@@ -127,6 +132,7 @@ where
             de,
             callback,
             path: Path::Root,
+            phantom: PhantomData,
         }
     }
 }
@@ -167,10 +173,11 @@ impl<'a> Display for Path<'a> {
 
 /// Plain old forwarding impl except for `deserialize_ignored_any` which invokes
 /// the callback.
-impl<'a, 'b, 'de, D, F> de::Deserializer<'de> for Deserializer<'a, 'b, D, F>
+impl<'a, 'b, 'de, D, F, S> de::Deserializer<'de> for Deserializer<'a, 'b, D, F, S>
 where
     D: de::Deserializer<'de>,
-    F: FnMut(Path),
+    F: FnMut(Path, S),
+    S: Deserialize<'de>,
 {
     type Error = D::Error;
 
@@ -420,8 +427,11 @@ where
     where
         V: Visitor<'de>,
     {
-        (self.callback)(self.path);
-        self.de.deserialize_ignored_any(visitor)
+        let span = S::deserialize(self.de)?;
+        (self.callback)(self.path, span);
+
+        // Caller told us they didn't care about the result, so just deserialize none.
+        visitor.visit_none()
     }
 
     fn deserialize_identifier<V>(self, visitor: V) -> Result<V::Value, D::Error>
@@ -435,27 +445,30 @@ where
 
 /// Wrapper that attaches context to a `Visitor`, `SeqAccess`, `EnumAccess` or
 /// `VariantAccess`.
-struct Wrap<'a, 'b, X, F: 'b> {
+struct Wrap<'a, 'b, X, F: 'b, S> {
     delegate: X,
     callback: &'b mut F,
     path: &'a Path<'a>,
+    phantom: PhantomData<fn() -> S>,
 }
 
-impl<'a, 'b, X, F> Wrap<'a, 'b, X, F> {
+impl<'a, 'b, X, F, S> Wrap<'a, 'b, X, F, S> {
     fn new(delegate: X, callback: &'b mut F, path: &'a Path<'a>) -> Self {
         Wrap {
             delegate,
             callback,
             path,
+            phantom: PhantomData,
         }
     }
 }
 
 /// Forwarding impl to preserve context.
-impl<'a, 'b, 'de, X, F> Visitor<'de> for Wrap<'a, 'b, X, F>
+impl<'a, 'b, 'de, X, F, S> Visitor<'de> for Wrap<'a, 'b, X, F, S>
 where
     X: Visitor<'de>,
-    F: FnMut(Path),
+    F: FnMut(Path, S),
+    S: Deserialize<'de>,
 {
     type Value = X::Value;
 
@@ -590,6 +603,7 @@ where
             de: deserializer,
             callback: self.callback,
             path: Path::Some { parent: self.path },
+            phantom: PhantomData,
         })
     }
 
@@ -601,6 +615,7 @@ where
             de: deserializer,
             callback: self.callback,
             path: Path::NewtypeStruct { parent: self.path },
+            phantom: PhantomData,
         })
     }
 
@@ -651,13 +666,14 @@ where
 }
 
 /// Forwarding impl to preserve context.
-impl<'a, 'b, 'de, X: 'a, F: 'b> de::EnumAccess<'de> for Wrap<'a, 'b, X, F>
+impl<'a, 'b, 'de, X: 'a, F: 'b, S> de::EnumAccess<'de> for Wrap<'a, 'b, X, F, S>
 where
     X: de::EnumAccess<'de>,
-    F: FnMut(Path),
+    F: FnMut(Path, S),
+    S: Deserialize<'de>,
 {
     type Error = X::Error;
-    type Variant = Wrap<'a, 'b, X::Variant, F>;
+    type Variant = Wrap<'a, 'b, X::Variant, F, S>;
 
     fn variant_seed<V>(self, seed: V) -> Result<(V::Value, Self::Variant), X::Error>
     where
@@ -672,10 +688,11 @@ where
 }
 
 /// Forwarding impl to preserve context.
-impl<'a, 'b, 'de, X, F> de::VariantAccess<'de> for Wrap<'a, 'b, X, F>
+impl<'a, 'b, 'de, X, F, S> de::VariantAccess<'de> for Wrap<'a, 'b, X, F, S>
 where
     X: de::VariantAccess<'de>,
-    F: FnMut(Path),
+    F: FnMut(Path, S),
+    S: Deserialize<'de>,
 {
     type Error = X::Error;
 
@@ -1158,7 +1175,8 @@ where
     where
         D: de::Deserializer<'de>,
     {
-        self.delegate.visit_newtype_struct(CaptureKey::new(deserializer, self.key))
+        self.delegate
+            .visit_newtype_struct(CaptureKey::new(deserializer, self.key))
     }
 
     fn visit_seq<V>(self, visitor: V) -> Result<Self::Value, V::Error>
@@ -1221,26 +1239,29 @@ where
 
 /// Seed used for map values, sequence elements and newtype variants to track
 /// their path.
-struct TrackedSeed<'a, X, F: 'a> {
+struct TrackedSeed<'a, X, F: 'a, S> {
     seed: X,
     callback: &'a mut F,
     path: Path<'a>,
+    phantom: PhantomData<fn() -> S>,
 }
 
-impl<'a, X, F> TrackedSeed<'a, X, F> {
+impl<'a, X, F, S> TrackedSeed<'a, X, F, S> {
     fn new(seed: X, callback: &'a mut F, path: Path<'a>) -> Self {
         TrackedSeed {
             seed,
             callback,
             path,
+            phantom: PhantomData,
         }
     }
 }
 
-impl<'a, 'de, X, F> DeserializeSeed<'de> for TrackedSeed<'a, X, F>
+impl<'a, 'de, X, F, S> DeserializeSeed<'de> for TrackedSeed<'a, X, F, S>
 where
     X: DeserializeSeed<'de>,
-    F: FnMut(Path),
+    F: FnMut(Path, S),
+    S: Deserialize<'de>,
 {
     type Value = X::Value;
 
@@ -1252,34 +1273,38 @@ where
             de: deserializer,
             callback: self.callback,
             path: self.path,
+            phantom: PhantomData,
         })
     }
 }
 
 /// Seq visitor that tracks the index of its elements.
-struct SeqAccess<'a, 'b, X, F: 'b> {
+struct SeqAccess<'a, 'b, X, F: 'b, S> {
     delegate: X,
     callback: &'b mut F,
     path: &'a Path<'a>,
     index: usize,
+    phantom: PhantomData<fn() -> S>,
 }
 
-impl<'a, 'b, X, F> SeqAccess<'a, 'b, X, F> {
+impl<'a, 'b, X, F, S> SeqAccess<'a, 'b, X, F, S> {
     fn new(delegate: X, callback: &'b mut F, path: &'a Path<'a>) -> Self {
         SeqAccess {
             delegate,
             callback,
             path,
             index: 0,
+            phantom: PhantomData,
         }
     }
 }
 
 /// Forwarding impl to preserve context.
-impl<'a, 'b, 'de, X, F> de::SeqAccess<'de> for SeqAccess<'a, 'b, X, F>
+impl<'a, 'b, 'de, X, F, S> de::SeqAccess<'de> for SeqAccess<'a, 'b, X, F, S>
 where
     X: de::SeqAccess<'de>,
-    F: FnMut(Path),
+    F: FnMut(Path, S),
+    S: Deserialize<'de>,
 {
     type Error = X::Error;
 
@@ -1303,20 +1328,22 @@ where
 
 /// Map visitor that captures the string value of its keys and uses that to
 /// track the path to its values.
-struct MapAccess<'a, 'b, X, F: 'b> {
+struct MapAccess<'a, 'b, X, F: 'b, S> {
     delegate: X,
     callback: &'b mut F,
     path: &'a Path<'a>,
     key: Option<String>,
+    phantom: PhantomData<fn() -> S>,
 }
 
-impl<'a, 'b, X, F> MapAccess<'a, 'b, X, F> {
+impl<'a, 'b, X, F, S> MapAccess<'a, 'b, X, F, S> {
     fn new(delegate: X, callback: &'b mut F, path: &'a Path<'a>) -> Self {
         MapAccess {
             delegate,
             callback,
             path,
             key: None,
+            phantom: PhantomData,
         }
     }
 
@@ -1328,10 +1355,11 @@ impl<'a, 'b, X, F> MapAccess<'a, 'b, X, F> {
     }
 }
 
-impl<'a, 'b, 'de, X, F> de::MapAccess<'de> for MapAccess<'a, 'b, X, F>
+impl<'a, 'b, 'de, X, F, S> de::MapAccess<'de> for MapAccess<'a, 'b, X, F, S>
 where
     X: de::MapAccess<'de>,
-    F: FnMut(Path),
+    F: FnMut(Path, S),
+    S: Deserialize<'de>,
 {
     type Error = X::Error;
 

@@ -1,22 +1,27 @@
 use serde::Deserialize;
 use serde_derive::Deserialize;
-use std::collections::{BTreeMap as Map, BTreeSet as Set};
+use std::collections::BTreeMap as Map;
 use std::iter::FromIterator;
 
-fn assert_ignored<'de, T>(json: &'de str, expected: &[&str]) -> T
+fn assert_ignored<'de, T>(json: &'de str, expected: &[(&str, &str)]) -> T
 where
     T: Deserialize<'de>,
 {
     let de = &mut serde_json::Deserializer::from_str(json);
 
-    let mut unused = Set::new();
+    let mut unused = Map::new();
 
-    let value: T = serde_ignored::deserialize(de, |path| {
-        unused.insert(path.to_string());
+    let value: T = serde_ignored::deserialize(de, |path, v: serde_json::Value| {
+        unused.insert(path.to_string(), v);
     })
     .unwrap();
 
-    let expected = Set::from_iter(expected.into_iter().cloned().map(str::to_owned));
+    let expected = Map::from_iter(
+        expected
+            .into_iter()
+            .cloned()
+            .map(|(k, v)| (k.to_owned(), serde_json::from_str(v).unwrap())),
+    );
     assert_eq!(unused, expected);
 
     value
@@ -54,7 +59,11 @@ fn test_readme() {
         "typo3": {}
     }"#;
 
-    let ignored = &["dependencies.serde.typo1", "typo2", "typo3"];
+    let ignored = &[
+        ("dependencies.serde.typo1", r#""""#),
+        ("typo2", r#"{"inner": ""}"#),
+        ("typo3", r#"{}"#),
+    ];
     let p: Package = assert_ignored(json, ignored);
 
     let expected = Package {
@@ -89,7 +98,7 @@ fn test_int_key() {
         }
     }"#;
 
-    let ignored = &["a.2.unused"];
+    let ignored = &[("a.2.unused", "null")];
     assert_ignored::<Test>(json, ignored);
 }
 
@@ -107,7 +116,7 @@ fn test_newtype_key() {
         }
     }"#;
 
-    let ignored = &["k.unused"];
+    let ignored = &[("k.unused", "null")];
     assert_ignored::<Test>(json, ignored);
 }
 
@@ -128,6 +137,6 @@ fn test_unit_variant_key() {
         }
     }"#;
 
-    let ignored = &["First.unused"];
+    let ignored = &[("First.unused", "null")];
     assert_ignored::<Test>(json, ignored);
 }
