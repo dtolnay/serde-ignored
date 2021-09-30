@@ -1,8 +1,4 @@
-#![allow(
-    clippy::from_iter_instead_of_collect,
-    clippy::into_iter_on_ref,
-    clippy::zero_sized_map_values
-)]
+#![allow(clippy::from_iter_instead_of_collect, clippy::zero_sized_map_values)]
 
 use serde::Deserialize;
 use serde_derive::Deserialize;
@@ -22,7 +18,7 @@ where
     })
     .unwrap();
 
-    let expected = Set::from_iter(expected.into_iter().cloned().map(str::to_owned));
+    let expected = Set::from_iter(expected.iter().cloned().map(str::to_owned));
     assert_eq!(unused, expected);
 
     value
