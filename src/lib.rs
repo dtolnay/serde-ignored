@@ -1158,7 +1158,8 @@ where
     where
         D: de::Deserializer<'de>,
     {
-        self.delegate.visit_newtype_struct(CaptureKey::new(deserializer, self.key))
+        self.delegate
+            .visit_newtype_struct(CaptureKey::new(deserializer, self.key))
     }
 
     fn visit_seq<V>(self, visitor: V) -> Result<Self::Value, V::Error>
