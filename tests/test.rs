@@ -30,6 +30,7 @@ where
 
 #[derive(Debug, Deserialize)]
 struct V {
+    #[allow(dead_code)]
     used: (),
 }
 
@@ -83,6 +84,7 @@ fn test_readme() {
 fn test_int_key() {
     #[derive(Debug, Deserialize)]
     struct Test {
+        #[allow(dead_code)]
         a: Map<usize, V>,
     }
 
