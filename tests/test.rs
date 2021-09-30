@@ -1,3 +1,9 @@
+#![allow(
+    clippy::from_iter_instead_of_collect,
+    clippy::into_iter_on_ref,
+    clippy::zero_sized_map_values
+)]
+
 use serde::Deserialize;
 use serde_derive::Deserialize;
 use std::collections::{BTreeMap as Map, BTreeSet as Set};
