@@ -85,7 +85,7 @@
 //! # fn main() { try_main().unwrap() }
 //! ```
 
-#![doc(html_root_url = "https://docs.rs/serde_ignored/0.1.2")]
+#![doc(html_root_url = "https://docs.rs/serde_ignored/0.1.3")]
 #![allow(clippy::missing_errors_doc)]
 
 use serde::de::{self, Deserialize, DeserializeSeed, Visitor};
