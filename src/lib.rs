@@ -651,10 +651,10 @@ where
 }
 
 /// Forwarding impl to preserve context.
-impl<'a, 'b, 'de, X: 'a, F: 'b> de::EnumAccess<'de> for Wrap<'a, 'b, X, F>
+impl<'a, 'b, 'de, X, F> de::EnumAccess<'de> for Wrap<'a, 'b, X, F>
 where
-    X: de::EnumAccess<'de>,
-    F: FnMut(Path),
+    X: de::EnumAccess<'de> + 'a,
+    F: FnMut(Path) + 'b,
 {
     type Error = X::Error;
     type Variant = Wrap<'a, 'b, X::Variant, F>;
