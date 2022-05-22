@@ -1,4 +1,8 @@
-#![allow(clippy::from_iter_instead_of_collect, clippy::zero_sized_map_values)]
+#![allow(
+    clippy::derive_partial_eq_without_eq,
+    clippy::from_iter_instead_of_collect,
+    clippy::zero_sized_map_values
+)]
 
 use serde::Deserialize;
 use serde_derive::Deserialize;
