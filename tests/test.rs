@@ -22,7 +22,7 @@ where
     })
     .unwrap();
 
-    let expected = Set::from_iter(expected.iter().cloned().map(str::to_owned));
+    let expected = Set::from_iter(expected.iter().copied().map(str::to_owned));
     assert_eq!(unused, expected);
 
     value
