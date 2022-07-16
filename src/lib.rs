@@ -85,11 +85,17 @@
 //! # fn main() { try_main().unwrap() }
 //! ```
 
+#![no_std]
 #![doc(html_root_url = "https://docs.rs/serde_ignored/0.1.3")]
 #![allow(clippy::missing_errors_doc)]
 
+extern crate alloc;
+
+use alloc::borrow::ToOwned;
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+use core::fmt::{self, Display};
 use serde::de::{self, Deserialize, DeserializeSeed, Visitor};
-use std::fmt::{self, Display};
 
 /// Entry point. See crate documentation for an example.
 pub fn deserialize<'de, D, F, T>(deserializer: D, mut callback: F) -> Result<T, D::Error>
