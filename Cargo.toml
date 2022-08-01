@@ -2,14 +2,14 @@
 name = "serde_ignored"
 version = "0.1.4" # update html_root_url and version in readme
 authors = ["David Tolnay <dtolnay@gmail.com>"]
-edition = "2018"
-rust-version = "1.36"
-license = "MIT OR Apache-2.0"
-description = "Find out about keys that are ignored when deserializing data"
-repository = "https://github.com/dtolnay/serde-ignored"
-keywords = ["serde"]
 categories = ["encoding"]
+description = "Find out about keys that are ignored when deserializing data"
+edition = "2018"
+keywords = ["serde"]
+license = "MIT OR Apache-2.0"
 readme = "README.md"
+repository = "https://github.com/dtolnay/serde-ignored"
+rust-version = "1.36"
 
 [dependencies]
 serde = { version = "1.0", default-features = false, features = ["alloc"] }
