@@ -7,7 +7,6 @@ description = "Find out about keys that are ignored when deserializing data"
 edition = "2018"
 keywords = ["serde", "serialization"]
 license = "MIT OR Apache-2.0"
-readme = "README.md"
 repository = "https://github.com/dtolnay/serde-ignored"
 rust-version = "1.36"
 
