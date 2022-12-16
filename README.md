@@ -3,7 +3,7 @@
 [<img alt="github" src="https://img.shields.io/badge/github-dtolnay/serde--ignored-8da0cb?style=for-the-badge&labelColor=555555&logo=github" height="20">](https://github.com/dtolnay/serde-ignored)
 [<img alt="crates.io" src="https://img.shields.io/crates/v/serde_ignored.svg?style=for-the-badge&color=fc8d62&logo=rust" height="20">](https://crates.io/crates/serde_ignored)
 [<img alt="docs.rs" src="https://img.shields.io/badge/docs.rs-serde__ignored-66c2a5?style=for-the-badge&labelColor=555555&logo=docs.rs" height="20">](https://docs.rs/serde_ignored)
-[<img alt="build status" src="https://img.shields.io/github/workflow/status/dtolnay/serde-ignored/CI/master?style=for-the-badge" height="20">](https://github.com/dtolnay/serde-ignored/actions?query=branch%3Amaster)
+[<img alt="build status" src="https://img.shields.io/github/actions/workflow/status/dtolnay/serde-ignored/ci.yml?branch=master&style=for-the-badge" height="20">](https://github.com/dtolnay/serde-ignored/actions?query=branch%3Amaster)
 
 Find out about keys that are ignored when deserializing data. This crate
 provides a wrapper that works with any existing Serde `Deserializer` and invokes
