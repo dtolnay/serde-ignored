@@ -1,6 +1,6 @@
 [package]
 name = "serde_ignored"
-version = "0.1.5" # update html_root_url and version in readme
+version = "0.1.6" # update html_root_url and version in readme
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 categories = ["encoding", "no-std"]
 description = "Find out about keys that are ignored when deserializing data"
