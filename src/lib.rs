@@ -437,6 +437,10 @@ where
         self.de
             .deserialize_identifier(Wrap::new(visitor, self.callback, &self.path))
     }
+
+    fn is_human_readable(&self) -> bool {
+        self.de.is_human_readable()
+    }
 }
 
 /// Wrapper that attaches context to a `Visitor`, `SeqAccess`, `EnumAccess` or
@@ -1008,6 +1012,10 @@ where
     {
         self.delegate
             .deserialize_identifier(CaptureKey::new(visitor, self.key))
+    }
+
+    fn is_human_readable(&self) -> bool {
+        self.delegate.is_human_readable()
     }
 }
 
