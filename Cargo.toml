@@ -11,11 +11,11 @@ repository = "https://github.com/dtolnay/serde-ignored"
 rust-version = "1.36"
 
 [dependencies]
-serde = { version = "1.0", default-features = false, features = ["alloc"] }
+serde = { version = "1.0.166", default-features = false, features = ["alloc"] }
 
 [dev-dependencies]
-serde_derive = "1.0"
-serde_json = "1.0"
+serde_derive = "1.0.166"
+serde_json = "1.0.100"
 
 [lib]
 doc-scrape-examples = false
