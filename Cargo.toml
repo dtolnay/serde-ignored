@@ -4,6 +4,7 @@ version = "0.1.9" # update html_root_url and version in readme
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 categories = ["encoding", "no-std"]
 description = "Find out about keys that are ignored when deserializing data"
+documentation = "https://docs.rs/serde_ignored"
 edition = "2018"
 keywords = ["serde", "serialization"]
 license = "MIT OR Apache-2.0"
