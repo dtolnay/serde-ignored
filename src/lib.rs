@@ -87,7 +87,7 @@
 
 #![no_std]
 #![doc(html_root_url = "https://docs.rs/serde_ignored/0.1.10")]
-#![allow(clippy::missing_errors_doc)]
+#![allow(clippy::missing_errors_doc, clippy::needless_lifetimes)]
 
 extern crate alloc;
 
