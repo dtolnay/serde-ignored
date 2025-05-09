@@ -232,6 +232,14 @@ where
             .deserialize_u64(Wrap::new(visitor, self.callback, &self.path))
     }
 
+    fn deserialize_u128<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: Visitor<'de>,
+    {
+        self.de
+            .deserialize_u128(Wrap::new(visitor, self.callback, &self.path))
+    }
+
     fn deserialize_i8<V>(self, visitor: V) -> Result<V::Value, D::Error>
     where
         V: Visitor<'de>,
@@ -262,6 +270,14 @@ where
     {
         self.de
             .deserialize_i64(Wrap::new(visitor, self.callback, &self.path))
+    }
+
+    fn deserialize_i128<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: Visitor<'de>,
+    {
+        self.de
+            .deserialize_i128(Wrap::new(visitor, self.callback, &self.path))
     }
 
     fn deserialize_f32<V>(self, visitor: V) -> Result<V::Value, D::Error>
@@ -512,6 +528,13 @@ where
         self.delegate.visit_i64(v)
     }
 
+    fn visit_i128<E>(self, v: i128) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        self.delegate.visit_i128(v)
+    }
+
     fn visit_u8<E>(self, v: u8) -> Result<Self::Value, E>
     where
         E: de::Error,
@@ -538,6 +561,13 @@ where
         E: de::Error,
     {
         self.delegate.visit_u64(v)
+    }
+
+    fn visit_u128<E>(self, v: u128) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        self.delegate.visit_u128(v)
     }
 
     fn visit_f32<E>(self, v: f32) -> Result<Self::Value, E>
@@ -811,6 +841,14 @@ where
             .deserialize_u64(CaptureKey::new(visitor, self.key))
     }
 
+    fn deserialize_u128<V>(self, visitor: V) -> Result<V::Value, X::Error>
+    where
+        V: Visitor<'de>,
+    {
+        self.delegate
+            .deserialize_u128(CaptureKey::new(visitor, self.key))
+    }
+
     fn deserialize_i8<V>(self, visitor: V) -> Result<V::Value, X::Error>
     where
         V: Visitor<'de>,
@@ -841,6 +879,14 @@ where
     {
         self.delegate
             .deserialize_i64(CaptureKey::new(visitor, self.key))
+    }
+
+    fn deserialize_i128<V>(self, visitor: V) -> Result<V::Value, X::Error>
+    where
+        V: Visitor<'de>,
+    {
+        self.delegate
+            .deserialize_i128(CaptureKey::new(visitor, self.key))
     }
 
     fn deserialize_f32<V>(self, visitor: V) -> Result<V::Value, X::Error>
@@ -1074,6 +1120,14 @@ where
         self.delegate.visit_i64(v)
     }
 
+    fn visit_i128<E>(self, v: i128) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        *self.key = Some(v.to_string());
+        self.delegate.visit_i128(v)
+    }
+
     fn visit_u8<E>(self, v: u8) -> Result<Self::Value, E>
     where
         E: de::Error,
@@ -1104,6 +1158,14 @@ where
     {
         *self.key = Some(v.to_string());
         self.delegate.visit_u64(v)
+    }
+
+    fn visit_u128<E>(self, v: u128) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        *self.key = Some(v.to_string());
+        self.delegate.visit_u128(v)
     }
 
     fn visit_f32<E>(self, v: f32) -> Result<Self::Value, E>
