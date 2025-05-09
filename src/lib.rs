@@ -86,7 +86,7 @@
 //! ```
 
 #![no_std]
-#![doc(html_root_url = "https://docs.rs/serde_ignored/0.1.11")]
+#![doc(html_root_url = "https://docs.rs/serde_ignored/0.1.12")]
 #![allow(
     clippy::elidable_lifetime_names,
     clippy::missing_errors_doc,
