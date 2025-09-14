@@ -95,6 +95,7 @@
 )]
 
 extern crate alloc;
+extern crate serde_core as serde;
 
 use alloc::borrow::ToOwned;
 use alloc::string::{String, ToString};
