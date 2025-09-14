@@ -1,6 +1,6 @@
 [package]
 name = "serde_ignored"
-version = "0.1.13"
+version = "0.1.14"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 categories = ["encoding", "no-std"]
 description = "Find out about keys that are ignored when deserializing data"
