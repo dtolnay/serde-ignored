@@ -90,7 +90,8 @@
 #![allow(
     clippy::elidable_lifetime_names,
     clippy::missing_errors_doc,
-    clippy::needless_lifetimes
+    clippy::needless_lifetimes,
+    clippy::uninlined_format_args
 )]
 
 extern crate alloc;
