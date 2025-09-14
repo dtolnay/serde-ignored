@@ -14,6 +14,9 @@ rust-version = "1.61"
 [dependencies]
 serde_core = { version = "1.0.220", default-features = false, features = ["alloc"] }
 
+[target.'cfg(any())'.dependencies]
+serde = { version = "1.0.220", default-features = false }
+
 [dev-dependencies]
 serde = "1.0.220"
 serde_derive = "1.0.220"
