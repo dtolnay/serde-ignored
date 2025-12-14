@@ -37,7 +37,7 @@
 //!     version: String,
 //! }
 //!
-//! # fn try_main() -> Result<(), Box<::std::error::Error>> {
+//! # fn try_main() -> Result<(), Box<dyn ::std::error::Error>> {
 //! let j = r#"{
 //!     "name": "demo",
 //!     "dependencies": {
