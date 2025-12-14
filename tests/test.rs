@@ -7,7 +7,6 @@
 use serde::Deserialize;
 use serde_derive::Deserialize;
 use std::collections::{BTreeMap as Map, BTreeSet as Set};
-use std::iter::FromIterator;
 
 fn assert_ignored<'de, T>(json: &'de str, expected: &[&str]) -> T
 where
