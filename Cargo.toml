@@ -9,7 +9,7 @@ edition = "2021"
 keywords = ["serde", "serialization"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/dtolnay/serde-ignored"
-rust-version = "1.68"
+rust-version = "1.71"
 
 [dependencies]
 serde_core = { version = "1.0.220", default-features = false, features = ["alloc"] }
